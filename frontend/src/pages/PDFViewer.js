@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, FileText, ChevronDown, ChevronRight, Eye } from 'lucide-react';
+import { Upload, FileText, ChevronDown, ChevronRight } from 'lucide-react';
 import axios from 'axios';
 
 const PDFViewer = () => {
@@ -20,14 +20,35 @@ const PDFViewer = () => {
 
   // Initialize Adobe PDF Embed API
   useEffect(() => {
-    if (pdfUrl && window.AdobeDC) {
-      const viewer = window.AdobeDC.View.createViewer(adobeViewerRef.current, adobeConfig);
-      viewer.previewFile({
-        content: { location: { url: pdfUrl } },
-        metaData: { fileName: pdfFile?.name || "document.pdf" }
-      });
+    if (pdfUrl && window.AdobeDC && window.AdobeDC.View) {
+      try {
+        const viewer = window.AdobeDC.View.createViewer(adobeViewerRef.current, adobeConfig);
+        viewer.previewFile({
+          content: { location: { url: pdfUrl } },
+          metaData: { fileName: pdfFile?.name || "document.pdf" }
+        });
+      } catch (error) {
+        console.log("Adobe PDF Embed API not available, using fallback viewer");
+        // Fallback to simple iframe for PDF viewing
+        const iframe = document.createElement('iframe');
+        iframe.src = pdfUrl;
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        iframe.style.border = 'none';
+        adobeViewerRef.current.innerHTML = '';
+        adobeViewerRef.current.appendChild(iframe);
+      }
+    } else if (pdfUrl) {
+      // Fallback to simple iframe for PDF viewing
+      const iframe = document.createElement('iframe');
+      iframe.src = pdfUrl;
+      iframe.style.width = '100%';
+      iframe.style.height = '100%';
+      iframe.style.border = 'none';
+      adobeViewerRef.current.innerHTML = '';
+      adobeViewerRef.current.appendChild(iframe);
     }
-  }, [pdfUrl]);
+  }, [pdfUrl, pdfFile?.name]);
 
   const onDrop = async (acceptedFiles) => {
     const file = acceptedFiles[0];

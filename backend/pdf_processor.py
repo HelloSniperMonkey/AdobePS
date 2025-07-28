@@ -14,8 +14,13 @@ class PDFProcessor:
         """Initialize PDF processor with lightweight models"""
         # Load lightweight model for heading detection (≤200MB)
         self.model_name = "distilbert-base-uncased"  # ~260MB but we'll use only for inference
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-        self.model = AutoModel.from_pretrained(self.model_name)
+        try:
+            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+            self.model = AutoModel.from_pretrained(self.model_name)
+        except Exception as e:
+            print(f"Warning: Could not load ML model: {e}")
+            self.tokenizer = None
+            self.model = None
         
         # Heading patterns for detection
         self.heading_patterns = [

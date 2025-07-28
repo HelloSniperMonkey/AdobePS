@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, Users, Target, FileText, Star, Clock, TrendingUp } from 'lucide-react';
-import axios from 'axios';
+import { Upload, Users, Target, FileText, Star, TrendingUp } from 'lucide-react';
 
 const PersonaAnalysis = () => {
   const [pdfFiles, setPdfFiles] = useState([]);

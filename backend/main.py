@@ -26,9 +26,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize processors
-pdf_processor = PDFProcessor()
-persona_analyzer = PersonaAnalyzer()
+# Initialize processors (lazy loading to avoid memory issues)
+pdf_processor = None
+persona_analyzer = None
+
+def get_pdf_processor():
+    global pdf_processor
+    if pdf_processor is None:
+        pdf_processor = PDFProcessor()
+    return pdf_processor
+
+def get_persona_analyzer():
+    global persona_analyzer
+    if persona_analyzer is None:
+        persona_analyzer = PersonaAnalyzer()
+    return persona_analyzer
 
 class PersonaRequest(BaseModel):
     persona_description: str
@@ -60,7 +72,8 @@ async def extract_outline(file: UploadFile = File(...)):
         
         # Process PDF
         start_time = time.time()
-        result = pdf_processor.extract_outline(temp_path)
+        processor = get_pdf_processor()
+        result = processor.extract_outline(temp_path)
         processing_time = time.time() - start_time
         
         # Clean up
@@ -92,7 +105,8 @@ async def analyze_persona(request: PersonaRequest):
         
         # Process persona analysis
         start_time = time.time()
-        result = persona_analyzer.analyze(
+        analyzer = get_persona_analyzer()
+        result = analyzer.analyze(
             pdf_files=request.pdf_files,
             persona_description=request.persona_description,
             job_to_be_done=request.job_to_be_done
@@ -129,7 +143,8 @@ async def batch_process(background_tasks: BackgroundTasks):
             pdf_path = os.path.join(input_dir, pdf_file)
             try:
                 # Extract outline
-                outline_result = pdf_processor.extract_outline(pdf_path)
+                processor = get_pdf_processor()
+                outline_result = processor.extract_outline(pdf_path)
                 
                 # Save result
                 output_file = os.path.join(output_dir, f"{pdf_file}.outline.json")
