@@ -18,6 +18,17 @@ const PDFViewer = () => {
     divId: "adobe-dc-view",
   };
 
+  // Initialize Adobe PDF Embed API
+  useEffect(() => {
+    if (pdfUrl && window.AdobeDC) {
+      const viewer = window.AdobeDC.View.createViewer(adobeViewerRef.current, adobeConfig);
+      viewer.previewFile({
+        content: { location: { url: pdfUrl } },
+        metaData: { fileName: pdfFile?.name || "document.pdf" }
+      });
+    }
+  }, [pdfUrl]);
+
   const onDrop = async (acceptedFiles) => {
     const file = acceptedFiles[0];
     if (file && file.type === 'application/pdf') {
@@ -88,12 +99,7 @@ const PDFViewer = () => {
     }
   };
 
-  useEffect(() => {
-    // Initialize Adobe PDF Embed API
-    if (pdfUrl && window.AdobeDC) {
-      window.AdobeDC.View.createViewer(adobeViewerRef.current, adobeConfig);
-    }
-  }, [pdfUrl]);
+
 
   const renderOutlineItem = (item, index, level = 0) => {
     const isExpanded = expandedSections.has(index);
