@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  adobe-pdf-research:
+    build: .
+    ports:
+      - "8000:8000"  # Backend API
+      - "3000:3000"  # Frontend
+    volumes:
+      - ./input:/app/input
+      - ./output:/app/output
+    environment:
+      - PYTHONPATH=/app/backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Add a simple web server for production frontend
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./frontend/build:/usr/share/nginx/html
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - adobe-pdf-research
+    profiles:
+      - production 
